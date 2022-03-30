@@ -9,7 +9,7 @@ import {
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { time } from "@openzeppelin/test-helpers";
 
-describe("BentVesting", () => {
+describe("HermesVesting", () => {
   let hermes: HermesToken, vesting: HermesVesting;
   let alice: SignerWithAddress,
     bob: SignerWithAddress,
@@ -128,6 +128,35 @@ describe("BentVesting", () => {
   });
 
   describe("claim", () => {
+    it("free claim test", async () => {
+      await vesting.createVesting(
+        alice.address,
+        ethers.utils.parseUnits("1000"),
+        1,
+        10
+      );
+      await vesting.createVesting(
+        bob.address,
+        ethers.utils.parseUnits("10000"),
+        1,
+        10
+      );
+      await vesting.connect(alice).freeClaim();
+      expect(await hermes.balanceOf(alice.address)).to.be.eq(
+        ethers.utils.parseUnits("166")
+      );
+      expect(await hermes.balanceOf(bob.address)).to.be.eq(
+        ethers.utils.parseUnits("1660")
+      );
+
+      await expect(vesting.freeClaim()).to.be.revertedWith("already did");
+      const aliceIndex = await vesting.vestingsByAddress(alice.address);
+      const aliceVesting = await vesting.vestings(aliceIndex[0]);
+      expect(aliceVesting.claimedAmount).to.be.eq(
+        ethers.utils.parseUnits("166")
+      );
+    });
+
     it("it checks vesting ID", async () => {
       await expect(vesting.connect(alice).claim(0)).to.revertedWith(
         "Invalid index!"

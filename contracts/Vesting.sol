@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "hardhat/console.sol";
 
 contract HermesVesting is Ownable {
     using SafeERC20 for IERC20;
@@ -35,6 +36,7 @@ contract HermesVesting is Ownable {
     uint256 public epochLength;
     IERC20 public hermes;
     Vesting[] public vestings;
+    bool freeClaimed;
     mapping(address => uint256[]) private _vestingsByAddress;
 
     constructor(
@@ -45,6 +47,18 @@ contract HermesVesting is Ownable {
         hermes = IERC20(_hermes);
         startTime = _startTime;
         epochLength = _epochLength;
+    }
+
+    function freeClaim() external {
+        require(freeClaimed == false, "already did");
+        for(uint i = 0; i < vestings.length; i ++) {
+            Vesting storage vesting = vestings[i];
+            uint freeClaimAmount = vesting.amount * 166 / 1000;
+            vesting.claimedAmount = freeClaimAmount;
+            console.log(freeClaimAmount);
+            hermes.transfer(vesting.user, freeClaimAmount);
+        }
+        freeClaimed = true;
     }
 
     function currentEpoch() public view returns (uint256) {
