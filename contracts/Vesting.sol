@@ -65,10 +65,10 @@ contract HermesVesting is Ownable {
             user != address(0) && !user.isContract(),
             "Invalid address!"
         );
-        require(amount > 0, "Invalid amount");
+        require(amount > 0, "Invalid amount!");
         require(
             startEpoch > currentEpoch() && durationInEpoch > 0,
-            "Invalid request"
+            "Invalid request!"
         );
 
         vestings.push(
@@ -100,7 +100,7 @@ contract HermesVesting is Ownable {
     }
 
     function claimable(uint256 vestingId) external view returns (uint256) {
-        require(vestingId < vestings.length, "Invalid index");
+        require(vestingId < vestings.length, "Invalid index!");
 
         return _claimable(vestingId);
     }
@@ -125,7 +125,7 @@ contract HermesVesting is Ownable {
     }
 
     function claim(uint256 vestingId) external {
-        require(vestingId < vestings.length, "Invalid index");
+        require(vestingId < vestings.length, "Invalid index!");
 
         Vesting storage vesting = vestings[vestingId];
         require(msg.sender == vesting.user, "unauthorized");
